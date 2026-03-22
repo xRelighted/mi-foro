@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Foro - Escribe tu mensaje</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Escribe un mensaje</h1>
+            <nav>
+                <a href="/test.html" class="btn-link">Ver mensajes</a>
+            </nav>
+        </header>
+        <main>
+            <form id="message-form">
+                <div class="form-group">
+                    <label for="author">Nombre:</label>
+                    <input type="text" id="author" placeholder="Tu nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="text">Mensaje:</label>
+                    <textarea id="text" rows="4" placeholder="Escribe tu mensaje..." required></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Enviar mensaje</button>
+            </form>
+            <div id="feedback" class="feedback"></div>
+        </main>
+    </div>
+    <script>
+        const form = document.getElementById('message-form');
+        const feedback = document.getElementById('feedback');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const author = document.getElementById('author').value.trim();
+            const text = document.getElementById('text').value.trim();
+
+            if (!author || !text) {
+                showFeedback('Por favor completa ambos campos', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author, text })
+                });
+                if (response.ok) {
+                    showFeedback('✅ Mensaje enviado correctamente', 'success');
+                    form.reset();
+                } else {
+                    const error = await response.json();
+                    showFeedback('❌ Error: ' + (error.error || 'No se pudo enviar'), 'error');
+                }
+            } catch (err) {
+                showFeedback('❌ Error de conexión', 'error');
+            }
+        });
+
+        function showFeedback(msg, type) {
+            feedback.textContent = msg;
+            feedback.className = `feedback ${type}`;
+            setTimeout(() => {
+                feedback.textContent = '';
+                feedback.className = 'feedback';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
